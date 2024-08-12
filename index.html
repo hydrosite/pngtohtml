@@ -1,0 +1,153 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image to HTML Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #111;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        h1 {
+            margin-bottom: 20px;
+            animation: colorChange 3s linear infinite;
+        }
+        @keyframes colorChange {
+            0% { color: #d00; text-shadow: 0 0 10px #d00, 0 0 20px #d00, 0 0 30px #d00; } /* Dark Red */
+            100% { color: #000; text-shadow: 0 0 10px #000, 0 0 20px #000, 0 0 30px #000; } /* Black */
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #d00; /* Dark red */
+            box-shadow: 0 0 5px #d00, 0 0 10px #d00;
+        }
+        input[type="file"] {
+            background-color: #333;
+        }
+        button:hover {
+            background-color: #a00; /* Slightly lighter dark red */
+            box-shadow: 0 0 5px #a00, 0 0 10px #a00;
+        }
+        #outputBox {
+            border: 2px solid #d00;
+            padding: 20px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            overflow: auto;
+            background-color: #222;
+            color: #0f0;
+            text-shadow: 0 0 5px #0f0;
+            display: inline-block;
+            max-width: 80vw;
+            max-height: 60vh;
+            width: 600px;
+            height: 400px;
+            word-wrap: break-word;
+            box-sizing: border-box;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin: 10px;
+            color: #d00; /* Dark red */
+            text-shadow: 0 0 5px #d00;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image to HTML Code Converter</h1>
+    <input type="file" id="fileInput">
+    <label for="width">Width (px):</label>
+    <input type="number" id="width" value="300">
+    <label for="height">Height (px):</label>
+    <input type="number" id="height" value="300">
+    <button onclick="convertImage()">Convert</button>
+    <button onclick="resetSize()">Original Size</button>
+    <div id="outputBox"></div>
+    <button onclick="copyToClipboard()">Copy</button>
+    
+    <script>
+        let originalWidth = 300;
+        let originalHeight = 300;
+
+        function convertImage() {
+            const fileInput = document.getElementById('fileInput');
+            const outputBox = document.getElementById('outputBox');
+            const widthInput = document.getElementById('width');
+            const heightInput = document.getElementById('height');
+            
+            if (fileInput.files.length === 0) {
+                outputBox.textContent = 'Please upload an image.';
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(event) {
+                const imageDataUrl = event.target.result;
+                const img = new Image();
+                img.src = imageDataUrl;
+                
+                img.onload = function() {
+                    // Store original dimensions
+                    originalWidth = img.width;
+                    originalHeight = img.height;
+
+                    // Set dimensions to user input
+                    const width = widthInput.value || img.width;
+                    const height = heightInput.value || img.height;
+
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    const htmlCode = `<img src="${canvas.toDataURL()}" width="${width}" height="${height}" alt="Converted Image">`;
+                    outputBox.textContent = htmlCode;
+
+                    // Set input fields to original dimensions
+                    widthInput.value = originalWidth;
+                    heightInput.value = originalHeight;
+                }
+            }
+            
+            reader.readAsDataURL(file);
+        }
+
+        function resetSize() {
+            document.getElementById('width').value = originalWidth;
+            document.getElementById('height').value = originalHeight;
+        }
+
+        function copyToClipboard() {
+            const outputBox = document.getElementById('outputBox');
+            const range = document.createRange();
+            range.selectNodeContents(outputBox);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            document.execCommand('copy');
+            selection.removeAllRanges();
+            alert('HTML code copied to clipboard!');
+        }
+    </script>
+</body>
+</html>
